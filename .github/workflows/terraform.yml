@@ -1,0 +1,41 @@
+name: Terraform Apply DO
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  terraform:
+    name: 'Terraform Apply to DO'
+    runs-on: ubuntu-latest
+
+    env:
+      # Used by backend
+      AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_KEY }}
+
+      # Used by DO for Droplets
+      TF_VAR_do_token: ${{ secrets.DO_PAT }}
+
+      # Used by DO for Spaces
+      TF_VAR_spaces_access_id: ${{ secrets.ACCESS_KEY }}
+      TF_VAR_spaces_secret_key: ${{ secrets.SECRET_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
+
+
